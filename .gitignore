@@ -1,0 +1,132 @@
+# ===========================
+# SENSITIVE FILES & SECRETS
+# ===========================
+.env
+.env.local
+.env.production
+.env.development
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.txt
+config.json
+credentials.json
+__pycache__/
+
+# ===========================
+# PYTHON CACHE & COMPILED
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+docs/setup/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===========================
+# DATABASES
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ===========================
+# LOGS
+# ===========================
+*.log
+logs/
+*.log.*
+log_*.txt
+
+# ===========================
+# TEMPORARY FILES
+# ===========================
+.tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ===========================
+# IDE & EDITOR FILES
+# ===========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# ===========================
+# VIRTUAL ENVIRONMENTS
+# ===========================
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===========================
+# JUPYTER NOTEBOOKS
+# ===========================
+.ipynb_checkpoints
+
+# ===========================
+# TESTING
+# ===========================
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ===========================
+# DOCUMENTATION BUILD
+# ===========================
+docs/_build/
+.readthedocs.yml
+
+# ===========================
+# PACKAGE MANAGERS
+# ===========================
+node_modules/
+package-lock.json
+yarn.lock
+
+# ===========================
+# BACKUP FILES
+# ===========================
+*.bak
+*.backup
+*.old
+*.orig
+
+# ===========================
+# DISCORD BOT SPECIFIC
+# ===========================
+danny_bot.db
+danny_bot.log
+*.log
+config/secrets.py 

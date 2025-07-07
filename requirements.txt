@@ -1,0 +1,49 @@
+# Discord Bot Core
+discord.py>=2.3.0
+python-dotenv>=1.0.0
+aiohttp>=3.8.0
+
+# AI and Language Models
+openai>=1.0.0
+anthropic>=0.3.0
+tiktoken>=0.5.0
+
+# Vector Database (Choose one or both)
+chromadb>=0.4.0
+pinecone>=3.0.0
+
+# Embeddings and NLP
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+torch>=2.0.0
+
+# Database
+aiosqlite>=0.19.0
+
+# Utilities
+asyncio  # Built-in to Python
+# json  # Built-in to Python
+# datetime  # Built-in to Python
+# logging  # Built-in to Python
+os  # Built-in to Python
+sys  # Built-in to Python
+pytz>=2023.3  # Timezone handling
+
+# Optional: Enhanced Features
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+Pillow>=10.0.0
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Performance Monitoring
+psutil>=5.9.0
+memory-profiler>=0.61.0
+
+# Added from the code block
+pinecone-client
+pandas 
