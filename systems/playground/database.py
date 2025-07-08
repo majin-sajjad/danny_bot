@@ -182,29 +182,31 @@ class PlaygroundDatabase:
         """Get all active practice sessions for session recovery"""
         try:
             async with aiosqlite.connect(self.db_path) as db:
+                db.row_factory = aiosqlite.Row 
                 async with db.execute('''
-                    SELECT cps.session_id, cps.user_id, cps.personality_id, cps.start_time,
-                           cp.name, cp.description, cp.system_prompt, cp.personality_traits
-                    FROM custom_practice_sessions cps
-                    JOIN custom_personalities cp ON cps.personality_id = cp.personality_id
-                    WHERE cps.end_time IS NULL
+                    SELECT 
+                        s.session_id, s.user_id, s.start_time,
+                        p.personality_id, p.name, p.description, p.system_prompt, p.personality_traits
+                    FROM custom_practice_sessions AS s
+                    JOIN custom_personalities AS p ON s.personality_id = p.personality_id
+                    WHERE s.end_time IS NULL
                 ''') as cursor:
                     rows = await cursor.fetchall()
                     
                     sessions = []
                     for row in rows:
                         session_data = {
-                            'session_id': row[0],
-                            'user_id': row[1],
-                            'personality_id': row[2],
-                            'start_time': row[3],
+                            'session_id': row['session_id'],
+                            'user_id': row['user_id'],
+                            'personality_id': row['personality_id'],
+                            'start_time': row['start_time'],
                             'homeowner_data': {
-                                'name': row[4],
-                                'description': row[5],
-                                'system_prompt': row[6],
-                                'personality_traits': json.loads(row[7]) if row[7] else {}
+                                'name': row['name'],
+                                'description': row['description'],
+                                'system_prompt': row['system_prompt'],
+                                'personality_traits': json.loads(row['personality_traits']) if row['personality_traits'] else {}
                             },
-                            'conversation_history': []  # Will be loaded if needed
+                            'conversation_history': []
                         }
                         sessions.append(session_data)
                     

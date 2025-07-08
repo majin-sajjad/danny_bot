@@ -17,11 +17,16 @@ class LeaderboardDatabase:
         self.db_path = 'danny_bot.db'
     
     async def setup_database(self):
-        """Initialize leaderboard database tables"""
+        """Initialize leaderboard database tables with a clean and correct schema."""
         async with aiosqlite.connect(self.db_path) as db:
-            # Deals table
+            # Drop existing tables to ensure a fresh start if schema is wrong
+            await db.execute('DROP TABLE IF EXISTS deals')
+            await db.execute('DROP TABLE IF EXISTS leaderboard_snapshots')
+            await db.execute('DROP TABLE IF EXISTS tournament_weeks')
+
+            # Deals table - Main table for all deals
             await db.execute('''
-                CREATE TABLE IF NOT EXISTS deals (
+                CREATE TABLE deals (
                     deal_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     guild_id INTEGER NOT NULL,
                     user_id INTEGER NOT NULL,
@@ -29,7 +34,7 @@ class LeaderboardDatabase:
                     deal_type TEXT NOT NULL,
                     niche TEXT NOT NULL DEFAULT 'solar',
                     points INTEGER NOT NULL,
-                    description TEXT NOT NULL,
+                    description TEXT,
                     additional_data TEXT,
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     verified BOOLEAN DEFAULT 1,
@@ -40,12 +45,9 @@ class LeaderboardDatabase:
                 )
             ''')
             
-            # Add missing columns if they don't exist
-            await self._add_missing_columns(db)
-            
             # Leaderboard snapshots table
             await db.execute('''
-                CREATE TABLE IF NOT EXISTS leaderboard_snapshots (
+                CREATE TABLE leaderboard_snapshots (
                     snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     guild_id INTEGER NOT NULL,
                     user_id INTEGER NOT NULL,
@@ -73,18 +75,26 @@ class LeaderboardDatabase:
                     admin_decision TEXT,
                     admin_reason TEXT,
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    resolved_timestamp TIMESTAMP
+                    resolved_timestamp TIMESTAMP,
+                    FOREIGN KEY (deal_id) REFERENCES deals(deal_id)
                 )
             ''')
             
-            # Tournament weeks table - with migration check
-            await self._ensure_tournament_weeks_table(db)
+            # Tournament weeks table
+            await db.execute('''
+                CREATE TABLE tournament_weeks (
+                    guild_id INTEGER NOT NULL,
+                    week_number INTEGER NOT NULL,
+                    start_date DATE NOT NULL,
+                    PRIMARY KEY (guild_id, week_number)
+                )
+            ''')
             
             # Tournament settings table
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS tournament_settings (
                     setting_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    guild_id INTEGER NOT NULL,
+                    guild_id INTEGER NOT NULL UNIQUE,
                     current_week INTEGER NOT NULL,
                     week_start_date DATE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -101,86 +111,7 @@ class LeaderboardDatabase:
             ''')
             
             await db.commit()
-            logger.info("Leaderboard database tables initialized")
-    
-    async def _add_missing_columns(self, db):
-        """Add missing columns to existing tables"""
-        cursor = await db.execute("PRAGMA table_info(deals)")
-        columns = await cursor.fetchall()
-        column_names = [column[1] for column in columns]
-        
-        missing_columns = [
-            ('guild_id', 'INTEGER DEFAULT 0'),
-            ('niche', 'TEXT DEFAULT "solar"'),
-            ('additional_data', 'TEXT'),
-            ('admin_submitted', 'BOOLEAN DEFAULT 0'),
-            ('admin_user_id', 'INTEGER')
-        ]
-        
-        for column_name, column_def in missing_columns:
-            if column_name not in column_names:
-                await db.execute(f'ALTER TABLE deals ADD COLUMN {column_name} {column_def}')
-                logger.info(f"Added {column_name} column to deals table")
-    
-    async def _ensure_tournament_weeks_table(self, db):
-        """Ensure tournament_weeks table has correct schema with guild_id column"""
-        try:
-            # Check if the table exists and get its schema
-            cursor = await db.execute("PRAGMA table_info(tournament_weeks)")
-            columns = await cursor.fetchall()
-            column_names = [col[1] for col in columns]
-            
-            # Check if guild_id column exists
-            if columns and 'guild_id' not in column_names:
-                logger.info("Migrating tournament_weeks table to include guild_id column")
-                
-                # Create new table with correct schema
-                await db.execute('''
-                    CREATE TABLE tournament_weeks_new (
-                        guild_id INTEGER NOT NULL,
-                        week_number INTEGER NOT NULL,
-                        start_date DATE NOT NULL,
-                        PRIMARY KEY (guild_id, week_number)
-                    )
-                ''')
-                
-                # Copy existing data with default guild_id = 0
-                await db.execute('''
-                    INSERT INTO tournament_weeks_new (guild_id, week_number, start_date)
-                    SELECT 0, week_number, start_date FROM tournament_weeks
-                ''')
-                
-                # Replace old table with new one
-                await db.execute("DROP TABLE tournament_weeks")
-                await db.execute("ALTER TABLE tournament_weeks_new RENAME TO tournament_weeks")
-                
-                logger.info("Successfully migrated tournament_weeks table schema")
-                
-            elif not columns:
-                # Table doesn't exist, create it with correct schema
-                await db.execute('''
-                    CREATE TABLE tournament_weeks (
-                        guild_id INTEGER NOT NULL,
-                        week_number INTEGER NOT NULL,
-                        start_date DATE NOT NULL,
-                        PRIMARY KEY (guild_id, week_number)
-                    )
-                ''')
-                logger.info("Created tournament_weeks table with correct schema")
-            else:
-                logger.info("tournament_weeks table already has correct schema")
-                
-        except Exception as e:
-            logger.error(f"Error ensuring tournament_weeks table schema: {e}")
-            # Fallback: try to create the table normally
-            await db.execute('''
-                CREATE TABLE IF NOT EXISTS tournament_weeks (
-                    guild_id INTEGER NOT NULL,
-                    week_number INTEGER NOT NULL,
-                    start_date DATE NOT NULL,
-                    PRIMARY KEY (guild_id, week_number)
-                )
-            ''')
+            logger.info("Leaderboard database tables (re)initialized with fresh schema.")
     
     async def insert_deal(self, guild_id: int, user_id: int, username: str, deal_type: str, 
                          niche: str, points: int, description: str, week_number: int,
