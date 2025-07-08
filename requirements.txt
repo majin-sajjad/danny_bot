@@ -12,7 +12,7 @@ pytz
 
 # Vector Database (Choose one or both)
 chromadb>=0.4.0
-pinecone>=3.0.0
+pinecone-client>=3.0.0
 
 # Embeddings and NLP
 sentence-transformers>=2.2.0
@@ -27,8 +27,8 @@ asyncio  # Built-in to Python
 # json  # Built-in to Python
 # datetime  # Built-in to Python
 # logging  # Built-in to Python
-os  # Built-in to Python
-sys  # Built-in to Python
+# os  # Built-in to Python
+# sys  # Built-in to Python
 pytz>=2023.3  # Timezone handling
 
 # Optional: Enhanced Features
@@ -47,5 +47,4 @@ psutil>=5.9.0
 memory-profiler>=0.61.0
 
 # Added from the code block
-pinecone-client
 pandas 
