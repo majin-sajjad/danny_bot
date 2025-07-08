@@ -52,13 +52,15 @@ logger = logging.getLogger(__name__)
 
 async def main():
     """Main bot entry point"""
+    logger.info("Starting bot...")
+
+    # Get bot token (now specifically looks for DISCORD_BOT_TOKEN)
+    bot_token = os.getenv('DISCORD_BOT_TOKEN')
+    if not bot_token:
+        logger.error("DISCORD_BOT_TOKEN not found in environment variables. Please check your .env file.")
+        return
+
     try:
-        # Get bot token (try both BOT_TOKEN and DISCORD_BOT_TOKEN)
-        bot_token = os.getenv('BOT_TOKEN') or os.getenv('DISCORD_BOT_TOKEN')
-        if not bot_token:
-            logger.error("BOT_TOKEN or DISCORD_BOT_TOKEN not found in environment variables")
-            return
-        
         # Create and run bot
         bot = DannyBot()
         
